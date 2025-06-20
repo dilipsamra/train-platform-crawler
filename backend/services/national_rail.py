@@ -2,13 +2,15 @@ import os
 from zeep import Client
 from zeep.transports import Transport
 from models.TrainService import TrainService
+import logging
+
+logger = logging.getLogger("train-platform-crawler.national_rail")
 
 DARWIN_TOKEN = os.getenv("DARWIN_TOKEN")
 WSDL_URL = "https://lite.realtime.nationalrail.co.uk/OpenLDBWS/wsdl.aspx"
 
 
 def _parse_service(svc):
-    # Defensive parsing for all fields
     try:
         scheduled_time = getattr(svc, 'std', None)
         expected_time = getattr(svc, 'etd', None)
@@ -33,13 +35,14 @@ def _parse_service(svc):
             status=status
         )
     except Exception as e:
-        # Optionally log the error
+        logger.error(f"Error parsing service: {e}", exc_info=True)
         return None
 
 def get_arrivals(crs_code: str):
     client = Client(wsdl=WSDL_URL, transport=Transport())
     header = {"AccessToken": {"TokenValue": DARWIN_TOKEN}}
     try:
+        logger.info(f"Requesting arrivals for CRS: {crs_code}")
         response = client.service.GetArrivalBoard(numRows=5, crs=crs_code, _soapheaders=header)
         services = []
         if hasattr(response, 'trainServices') and response.trainServices and hasattr(response.trainServices, 'service'):
@@ -47,15 +50,17 @@ def get_arrivals(crs_code: str):
                 parsed = _parse_service(svc)
                 if parsed:
                     services.append(parsed)
+        logger.info(f"Found {len(services)} arrivals for CRS: {crs_code}")
         return services
     except Exception as e:
-        # Optionally log the error
+        logger.error(f"Error fetching arrivals for {crs_code}: {e}", exc_info=True)
         return []
 
 def get_departures(crs_code: str):
     client = Client(wsdl=WSDL_URL, transport=Transport())
     header = {"AccessToken": {"TokenValue": DARWIN_TOKEN}}
     try:
+        logger.info(f"Requesting departures for CRS: {crs_code}")
         response = client.service.GetDepartureBoard(numRows=5, crs=crs_code, _soapheaders=header)
         services = []
         if hasattr(response, 'trainServices') and response.trainServices and hasattr(response.trainServices, 'service'):
@@ -63,7 +68,8 @@ def get_departures(crs_code: str):
                 parsed = _parse_service(svc)
                 if parsed:
                     services.append(parsed)
+        logger.info(f"Found {len(services)} departures for CRS: {crs_code}")
         return services
     except Exception as e:
-        # Optionally log the error
+        logger.error(f"Error fetching departures for {crs_code}: {e}", exc_info=True)
         return []

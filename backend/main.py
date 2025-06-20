@@ -4,6 +4,7 @@ from services.national_rail import get_arrivals, get_departures
 from models.TrainService import TrainService
 import os
 from dotenv import load_dotenv
+import logging
 
 load_dotenv()
 
@@ -17,16 +18,32 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s %(levelname)s %(name)s %(message)s',
+)
+logger = logging.getLogger("train-platform-crawler")
+
 @app.get("/station/{crs_code}/arrivals", response_model=list[TrainService])
 def arrivals(crs_code: str):
     try:
+        logger.info(f"Fetching arrivals for CRS: {crs_code}")
         return get_arrivals(crs_code)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error fetching arrivals for {crs_code}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error. Please try again later.")
 
 @app.get("/station/{crs_code}/departures", response_model=list[TrainService])
 def departures(crs_code: str):
     try:
+        logger.info(f"Fetching departures for CRS: {crs_code}")
         return get_departures(crs_code)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error fetching departures for {crs_code}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error. Please try again later.")
+
+# Add a health check endpoint
+@app.get("/health")
+def health():
+    return {"status": "ok"}

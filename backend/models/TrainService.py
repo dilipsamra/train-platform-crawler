@@ -1,5 +1,8 @@
 from pydantic import BaseModel
 from typing import Optional
+import logging
+
+logger = logging.getLogger("train-platform-crawler.models.TrainService")
 
 class TrainService(BaseModel):
     scheduled_time: str

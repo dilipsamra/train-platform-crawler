@@ -1,23 +1,42 @@
 import csv
 import os
+import logging
 
-# Utility for converting station names to CRS codes
-# In production, use a full mapping or external API
+logger = logging.getLogger("train-platform-crawler.crs")
 
 STATION_CRS = {}
 CSV_PATH = os.path.join(os.path.dirname(__file__), 'station_codes.csv')
 if os.path.exists(CSV_PATH):
-    with open(CSV_PATH, newline='', encoding='utf-8') as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            # Skip empty or malformed rows
-            if not row:
-                continue
-            # Defensive: handle possible None values in keys
-            name_key = next((k for k in row if k and k.strip().lower() == 'stationname'), None)
-            crs_key = next((k for k in row if k and k.strip().lower() == 'crscode'), None)
-            if name_key and crs_key and row[name_key] and row[crs_key]:
-                STATION_CRS[row[name_key].lower()] = row[crs_key]
+    try:
+        with open(CSV_PATH, newline='', encoding='utf-8-sig') as csvfile:
+            # Skip comment lines before the header
+            while True:
+                pos = csvfile.tell()
+                line = csvfile.readline()
+                if not line.startswith("#"):
+                    csvfile.seek(pos)
+                    break
+            reader = csv.DictReader(csvfile)
+            print("CSV header keys:", reader.fieldnames)
+            for row in reader:
+                if not row:
+                    continue
+                name_key = next((k for k in row if k and k.strip().lower() == 'stationname'), None)
+                crs_key = next((k for k in row if k and k.strip().lower() == 'crscode'), None)
+                if name_key and crs_key and row[name_key] and row[crs_key]:
+                    key = row[name_key].strip().lower()
+                    value = row[crs_key].strip().upper()
+                    STATION_CRS[key] = value
+            print("Loaded station keys:", list(STATION_CRS.keys())[:10])
+        logger.info(f"Loaded {len(STATION_CRS)} station CRS codes. Example keys: {list(STATION_CRS.keys())[:5]}")
+    except Exception as e:
+        logger.error(f"Error loading CRS CSV: {e}", exc_info=True)
+else:
+    logger.warning(f"CRS CSV file not found at {CSV_PATH}")
 
 def station_name_to_crs(name: str) -> str:
-    return STATION_CRS.get(name.lower())
+    key = name.strip().lower()
+    crs = STATION_CRS.get(key)
+    if not crs:
+        logger.warning(f"CRS code not found for station name: {name} (lookup key: {key})")
+    return crs
