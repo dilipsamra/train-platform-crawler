@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <GetArrivalBoardResponse xmlns="http://thalesgroup.com/RTTI/2017-10-01/ldb/">
+      <GetStationBoardResult>
+        <generatedAt>2024-06-19T10:00:00.000Z</generatedAt>
+        <locationName>London Euston</locationName>
+        <crs>EUS</crs>
+        <trainServices>
+          <service>
+            <std>10:00</std>
+            <etd>10:05</etd>
+            <platform>5</platform>
+            <operator>Avanti West Coast</operator>
+            <operatorCode>AWC</operatorCode>
+            <serviceID>A1</serviceID>
+            <origin>
+              <location>
+                <locationName>London Euston</locationName>
+                <crs>EUS</crs>
+              </location>
+            </origin>
+            <destination>
+              <location>
+                <locationName>Manchester Piccadilly</locationName>
+                <crs>MAN</crs>
+              </location>
+            </destination>
+            <isCancelled>false</isCancelled>
+            <cancelReason/>
+            <delayReason/>
+          </service>
+          <!-- More <service> elements -->
+        </trainServices>
+      </GetStationBoardResult>
+    </GetArrivalBoardResponse>
+  </soap:Body>
+</soap:Envelope>

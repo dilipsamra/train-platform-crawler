@@ -1,0 +1,40 @@
+{
+  "info": {
+    "_postman_id": "b1e1e1e1-1234-5678-9abc-def012345678",
+    "name": "Train Platform Crawler API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Collection for testing Train Platform Crawler FastAPI endpoints."
+  },
+  "item": [
+    {
+      "name": "Get Arrivals",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8000/station/EUS/arrivals",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["station", "EUS", "arrivals"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Departures",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8000/station/EUS/departures",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["station", "EUS", "departures"]
+        }
+      },
+      "response": []
+    }
+  ]
+}
