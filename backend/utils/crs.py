@@ -36,6 +36,11 @@ def _load_station_crs():
     else:
         logger.warning(f"CRS CSV file not found at {csv_path}")
 
+def reload_station_crs():
+    global STATION_CRS
+    STATION_CRS = {}
+    _load_station_crs()
+
 _load_station_crs()
 
 def station_name_to_crs(name: str) -> str:
