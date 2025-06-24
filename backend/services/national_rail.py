@@ -1,13 +1,13 @@
 import os
-from zeep import Client
-from zeep.transports import Transport
 from models.TrainService import TrainService
+from services.ldbws_rest import get_dep_board_with_details, get_arr_board_with_details
 import logging
 
-logger = logging.getLogger("train-platform-crawler.national_rail")
+# Use the new endpoint from environment or default to the Rail Data Marketplace endpoint
+BASE_URL = os.getenv("LDBWS_BASE_URL", "https://api1.raildata.org.uk/1010-live-departure-board-dep1_2/LDBWS/api/20220120")
 
-DARWIN_TOKEN = os.getenv("DARWIN_TOKEN")
-WSDL_URL = "https://lite.realtime.nationalrail.co.uk/OpenLDBWS/wsdl.aspx"
+
+logger = logging.getLogger("train-platform-crawler.national_rail")
 
 
 def _parse_service(svc):
@@ -38,38 +38,66 @@ def _parse_service(svc):
         logger.error(f"Error parsing service: {e}", exc_info=True)
         return None
 
+
 def get_arrivals(crs_code: str):
-    client = Client(wsdl=WSDL_URL, transport=Transport())
-    header = {"AccessToken": {"TokenValue": DARWIN_TOKEN}}
     try:
-        logger.info(f"Requesting arrivals for CRS: {crs_code}")
-        response = client.service.GetArrivalBoard(numRows=5, crs=crs_code, _soapheaders=header)
+        logger.info(f"Requesting arrivals for CRS: {crs_code} via REST API")
+        data = get_arr_board_with_details(crs_code, numRows=5, base_url=BASE_URL)
         services = []
-        if hasattr(response, 'trainServices') and response.trainServices and hasattr(response.trainServices, 'service'):
-            for svc in response.trainServices.service:
-                parsed = _parse_service(svc)
-                if parsed:
-                    services.append(parsed)
+        for svc in (data.get('trainServices') or []):
+            scheduled_time = svc.get('sta')
+            expected_time = svc.get('eta')
+            platform = svc.get('platform')
+            operator = svc.get('operator')
+            destination = svc.get('destination', [{}])[0].get('locationName') if svc.get('destination') else None
+            origin = svc.get('origin', [{}])[0].get('locationName') if svc.get('origin') else None
+            service_id = svc.get('serviceID')
+            status = expected_time
+            services.append(TrainService(
+                scheduled_time=scheduled_time,
+                expected_time=expected_time,
+                platform=platform,
+                operator=operator,
+                destination=destination,
+                origin=origin,
+                service_id=service_id,
+                status=status
+            ))
         logger.info(f"Found {len(services)} arrivals for CRS: {crs_code}")
         return services
     except Exception as e:
         logger.error(f"Error fetching arrivals for {crs_code}: {e}", exc_info=True)
         return []
 
+
 def get_departures(crs_code: str):
-    client = Client(wsdl=WSDL_URL, transport=Transport())
-    header = {"AccessToken": {"TokenValue": DARWIN_TOKEN}}
     try:
-        logger.info(f"Requesting departures for CRS: {crs_code}")
-        response = client.service.GetDepartureBoard(numRows=5, crs=crs_code, _soapheaders=header)
+        logger.info(f"Requesting departures for CRS: {crs_code} via REST API")
+        data = get_dep_board_with_details(crs_code, numRows=5, base_url=BASE_URL)
         services = []
-        if hasattr(response, 'trainServices') and response.trainServices and hasattr(response.trainServices, 'service'):
-            for svc in response.trainServices.service:
-                parsed = _parse_service(svc)
-                if parsed:
-                    services.append(parsed)
+        for svc in (data.get('trainServices') or []):
+            scheduled_time = svc.get('std')
+            expected_time = svc.get('etd')
+            platform = svc.get('platform')
+            operator = svc.get('operator')
+            destination = svc.get('destination', [{}])[0].get('locationName') if svc.get('destination') else None
+            origin = svc.get('origin', [{}])[0].get('locationName') if svc.get('origin') else None
+            service_id = svc.get('serviceID')
+            status = expected_time
+            services.append(TrainService(
+                scheduled_time=scheduled_time,
+                expected_time=expected_time,
+                platform=platform,
+                operator=operator,
+                destination=destination,
+                origin=origin,
+                service_id=service_id,
+                status=status
+            ))
         logger.info(f"Found {len(services)} departures for CRS: {crs_code}")
         return services
     except Exception as e:
         logger.error(f"Error fetching departures for {crs_code}: {e}", exc_info=True)
         return []
+
+# Optionally, you can implement get_arrivals similarly using the REST API's GetArrivalBoard endpoint.

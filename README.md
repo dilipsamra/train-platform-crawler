@@ -1,55 +1,69 @@
 # Train Platform Crawler
 
-This project is a modular web application for scanning UK National Rail arrivals and departures from a given station. It is structured for easy extension (e.g., notifications, disruption alerts, mobile support).
+This project is a modular web application for viewing UK National Rail arrivals and departures from a given station, using the Rail Data Marketplace Live Departure Board REST API.
 
 ## Structure
+
 - `backend/` — FastAPI Python backend (API, National Rail integration)
 - `frontend/` — React TypeScript frontend (UI)
 
 ## Quick Start
 
-### Backend
-1. `cd backend`
-2. `python3 -m venv venv && source venv/bin/activate`
-3. `pip install -r requirements.txt`
-4. Create a `.env` file with your National Rail Darwin API token:
-   ```
-   DARWIN_TOKEN=your_token_here
-   ```
-5. `uvicorn main:app --reload`
-
-### Frontend
-1. `cd frontend`
-2. `npm install`
-3. `npm start`
-
-## Docker Setup
-
 ### Prerequisites
+
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed
+- Rail Data Marketplace account with access to the Live Departure Board API
 
-### Build and Run (Backend + Frontend)
+### Setup
 
-1. Copy your `.env` file into `backend/.env` (for Darwin token, etc).
-2. From the project root, run:
-   ```sh
-   docker-compose up --build
-   ```
-3. Access the apps:
-   - Backend API: http://localhost:8000
-   - Frontend: http://localhost:3000
+#### 1. Get Your API Key
 
-### Stopping
-To stop the containers:
+- Subscribe to the "Live Departure Board" product on Rail Data Marketplace.
+- Copy your API key (consumer key) from the portal.
+
+#### 2. Configure Environment Variables
+
+- In the project root, copy your API key into `backend/.env`:
+
+  ```env
+  CONSUMER_KEY=your_actual_api_key
+  LDBWS_BASE_URL=https://api1.raildata.org.uk/1010-live-departure-board-dep1_2/LDBWS/api/20220120
+  ```
+
+#### 3. Build and Run with Docker
+
+From the project root, run:
+
 ```sh
-docker-compose down
+docker compose up --build
 ```
 
-### Development
+- Backend API: [http://localhost:8000](http://localhost:8000)
+- Frontend: [http://localhost:3000](http://localhost:3000)
+
+#### 4. Stopping
+
+To stop the containers:
+
+```sh
+docker compose down
+```
+
+## API Usage
+
+- Arrivals: `GET /station/{crs_code}/arrivals`
+- Departures: `GET /station/{crs_code}/departures`
+- Example: [http://localhost:8000/station/KGX/departures](http://localhost:8000/station/KGX/departures)
+
+You can import the OpenAPI spec from [http://localhost:8000/openapi.json](http://localhost:8000/openapi.json) into Postman for easy testing.
+
+## Development
+
 - Code changes in `backend/` and `frontend/` will auto-reload in Docker containers.
 - For production, you may want to adjust Dockerfiles for optimized builds.
 
 ## Features
+
 - Input a station (e.g., London Euston)
 - See last 5 and next 5 arrivals/departures, platform, operator
 - Modular for future features (notifications, disruption alerts, mobile)
