@@ -1,8 +1,14 @@
 import pytest
+import os
 from unittest.mock import patch, MagicMock
 from services import national_rail
 
-@patch("services.ldbws_rest.get_arr_board_with_details")
+@pytest.fixture(autouse=True)
+def set_dummy_env(monkeypatch):
+    monkeypatch.setenv("CONSUMER_KEY", "dummy")
+    monkeypatch.setenv("LDBWS_BASE_URL", "https://dummy-url")
+
+@patch("services.national_rail.get_arr_board_with_details")
 def test_get_arrivals_returns_services(mock_get_arr_board_with_details):
     # Mock the REST response structure
     mock_service = {
@@ -21,7 +27,7 @@ def test_get_arrivals_returns_services(mock_get_arr_board_with_details):
     assert result[0].destination == "Manchester Piccadilly"
     assert result[0].origin == "London Euston"
 
-@patch("services.ldbws_rest.get_arr_board_with_details")
+@patch("services.national_rail.get_arr_board_with_details")
 def test_get_arrivals_handles_exception(mock_get_arr_board_with_details):
     mock_get_arr_board_with_details.side_effect = Exception("API error")
     result = national_rail.get_arrivals("EUS")
