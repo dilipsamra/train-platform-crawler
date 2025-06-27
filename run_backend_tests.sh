@@ -3,5 +3,5 @@
 # Ensure required env vars for all tests
 export CONSUMER_KEY=dummy_key
 
-# Run pytest with correct PYTHONPATH
+cd backend
 PYTHONPATH=. pytest tests "$@"

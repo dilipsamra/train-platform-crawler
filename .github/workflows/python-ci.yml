@@ -34,5 +34,5 @@ jobs:
       - name: Set PYTHONPATH
         run: echo "PYTHONPATH=$(pwd):$PYTHONPATH" >> $GITHUB_ENV
       - name: Run backend tests with env setup
-        run: bash ../run_backend_tests.sh
-        working-directory: backend
+        run: bash run_backend_tests.sh
+        working-directory: .
