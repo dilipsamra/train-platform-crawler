@@ -4,4 +4,4 @@
 export CONSUMER_KEY=dummy_key
 
 # Run pytest with correct PYTHONPATH
-PYTHONPATH=backend pytest backend/tests "$@"
+PYTHONPATH=. pytest tests "$@"
