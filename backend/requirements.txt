@@ -4,3 +4,9 @@ httpx
 python-dotenv
 zeep
 pytest
+requests
+pydantic
+pydantic-settings
+# Optional notification dependencies
+twilio
+firebase-admin

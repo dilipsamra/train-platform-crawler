@@ -26,3 +26,5 @@ frontend/build/
 
 # Ignore CSV data if you don't want to commit it
 backend/utils/station_codes.csv
+station_codes.csv
+IMPROVEMENTS.md
